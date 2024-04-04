@@ -1,11 +1,12 @@
 package pl.put.travelmate
-
 import android.os.Bundle
 import androidx.activity.ComponentActivity
+import androidx.activity.compose.BackHandler
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
@@ -14,7 +15,11 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import androidx.navigation.compose.NavHost
@@ -25,7 +30,6 @@ import pl.put.travelmate.data.Trail
 import pl.put.travelmate.ui.components.TravelMateAppBar
 import pl.put.travelmate.ui.pages.TrailDetail
 import pl.put.travelmate.ui.theme.TravelMateTheme
-
 
 class MainActivity : ComponentActivity() {
 
@@ -134,20 +138,29 @@ class MainActivity : ComponentActivity() {
         setContent {
             val navController = rememberNavController()
 
+            val isTablet = with(LocalConfiguration.current) {
+                screenWidthDp >= 600 // Common threshold for tablets
+            }
+
+
             TravelMateTheme {
-                Column {
-                    TravelMateAppBar()
-                    NavHost(navController, startDestination = "main") {
-                        composable("main") {
-                            TrailList(
-                                trails = trails,
-                                navController = navController
-                            )
-                        }
-                        composable("trail/{trailId}") { backStackEntry ->
-                            val trailId = backStackEntry.arguments?.getString("trailId")
-                            val trail = findTrailById(trailId)
-                            TrailDetail(trail)
+                if (isTablet){
+                    MasterDetailScreen(trails=trails)
+                } else {
+                    Column {
+                        TravelMateAppBar()
+                        NavHost(navController, startDestination = "main") {
+                            composable("main") {
+                                TrailList(
+                                    trails = trails,
+                                    navController = navController
+                                )
+                            }
+                            composable("trail/{trailId}") { backStackEntry ->
+                                val trailId = backStackEntry.arguments?.getString("trailId")
+                                val trail = findTrailById(trailId)
+                                TrailDetail(trail)
+                            }
                         }
                     }
                 }
@@ -193,3 +206,60 @@ fun TrailListItem(trail: Trail, navController: NavController) {
         }
     }
 }
+
+@Composable
+fun MasterDetailScreen(trails: List<Trail>) {
+    val selectedTrail = remember { mutableStateOf<Trail?>(null) }
+    val trailHistory = remember { mutableStateListOf<Trail>() }
+
+    BackHandler(enabled = trailHistory.size > 1) {
+        trailHistory.removeLast()
+        selectedTrail.value = trailHistory.lastOrNull()
+    }
+
+    Row(modifier = Modifier.fillMaxSize()) {
+        Column(modifier = Modifier.weight(1f)) {
+            TravelMateAppBar()
+            TrailListMD(trails = trails, onTrailSelected = { trail ->
+                if (!trailHistory.contains(trail) || trail != trailHistory.last()) {
+                    selectedTrail.value = trail
+                    trailHistory.add(trail)
+                }
+            })
+        }
+
+        Column(modifier = Modifier
+            .weight(2f)
+            .padding(8.dp)) {
+            selectedTrail.value?.let { trail ->
+                TrailDetail(trail = trail)
+            } ?: Text("Wybierz ścieżkę", style = MaterialTheme.typography.headlineMedium)
+        }
+    }
+}
+
+
+@Composable
+fun TrailListMD(trails: List<Trail>, onTrailSelected: (Trail) -> Unit) {
+    LazyColumn {
+        items(trails) { trail ->
+            TrailListItemMD(trail = trail, onTrailClick = { onTrailSelected(trail) })
+        }
+    }
+}
+
+@Composable
+fun TrailListItemMD(trail: Trail, onTrailClick: () -> Unit) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(8.dp)
+            .clickable(onClick = onTrailClick)
+    ) {
+        Column(modifier = Modifier.padding(8.dp)) {
+            Text(text = trail.name, style = MaterialTheme.typography.headlineMedium)
+            Text(text = trail.description, style = MaterialTheme.typography.headlineSmall)
+        }
+    }
+}
+
