@@ -16,5 +16,13 @@ data class Trail(
     val elevation: Int?,
     val difficulty: Difficulty?,
     val longDescription: String?,
+    val time: String?,
+    val steps: List<TrailStep>
+)
+
+data class TrailStep(
+    val id: Int,
+    val name: String,
+    val distance: String?,
     val time: String?
 )
