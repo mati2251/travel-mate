@@ -48,6 +48,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.material3.Icon
+import androidx.compose.runtime.MutableState
 
 class MainActivity : ComponentActivity() {
 
@@ -317,26 +318,37 @@ fun TrailListItem(trail: Trail, navController: NavController) {
 fun MasterDetailScreen(trails: List<Trail>) {
     val selectedTrail = remember { mutableStateOf<Trail?>(null) }
     val trailHistory = remember { mutableStateListOf<Trail>() }
+    val navController = rememberNavController()
 
     BackHandler(enabled = trailHistory.size > 1) {
         trailHistory.removeLast()
         selectedTrail.value = trailHistory.lastOrNull()
     }
 
+    TravelMateAppBar(navController = navController) // AppBar z przyciskami kategorii
+
     Row(modifier = Modifier.fillMaxSize()) {
         Column(modifier = Modifier.weight(1f)) {
-            TravelMateAppBar()
-            TrailListMD(trails = trails, onTrailSelected = { trail ->
-                if (!trailHistory.contains(trail) || trail != trailHistory.last()) {
-                    selectedTrail.value = trail
-                    trailHistory.add(trail)
+            NavHost(navController, startDestination = "allTrails") {
+                composable("allTrails") {
+                    TrailListMD(trails = trails, onTrailSelected = { trail ->
+                        handleTrailSelection(trail, selectedTrail, trailHistory)
+                    })
                 }
-            })
+                composable("easyTrails") {
+                    TrailListMD(trails = trails.filter { it.difficulty == Difficulty.EASY }, onTrailSelected = { trail ->
+                        handleTrailSelection(trail, selectedTrail, trailHistory)
+                    })
+                }
+                composable("mediumTrails") {
+                    TrailListMD(trails = trails.filter { it.difficulty == Difficulty.MEDIUM }, onTrailSelected = { trail ->
+                        handleTrailSelection(trail, selectedTrail, trailHistory)
+                    })
+                }
+            }
         }
 
-        Column(modifier = Modifier
-            .weight(2f)
-            .padding(8.dp)) {
+        Column(modifier = Modifier.weight(2f).padding(8.dp)) {
             selectedTrail.value?.let { trail ->
                 TrailDetail(trail = trail)
             } ?: Text("Wybierz ścieżkę", style = MaterialTheme.typography.headlineMedium)
@@ -344,14 +356,27 @@ fun MasterDetailScreen(trails: List<Trail>) {
     }
 }
 
+fun handleTrailSelection(trail: Trail, selectedTrail: MutableState<Trail?>, trailHistory: MutableList<Trail>) {
+    if (!trailHistory.contains(trail) || trail != trailHistory.last()) {
+        selectedTrail.value = trail
+        trailHistory.add(trail)
+    }
+}
+
 
 @Composable
 fun TrailListMD(trails: List<Trail>, onTrailSelected: (Trail) -> Unit) {
-    LazyColumn {
-        items(trails) { trail ->
-            TrailListItemMD(trail = trail, onTrailClick = { onTrailSelected(trail) })
+    val gridState = rememberLazyGridState()
+    LazyVerticalGrid(
+        columns = GridCells.Fixed(2),
+        state = gridState,
+        contentPadding = PaddingValues(8.dp),
+        content = {
+            items(trails) { trail ->
+                TrailListItemMD(trail = trail, onTrailClick = { onTrailSelected(trail) })
+            }
         }
-    }
+    )
 }
 
 @Composable
@@ -362,9 +387,14 @@ fun TrailListItemMD(trail: Trail, onTrailClick: () -> Unit) {
             .padding(8.dp)
             .clickable(onClick = onTrailClick)
     ) {
-        Column(modifier = Modifier.padding(8.dp)) {
+        Column {
+            Image(
+                painter = painterResource(id = R.drawable.image),
+                contentDescription = trail.name,
+                contentScale = ContentScale.Crop,
+                modifier = Modifier.height(150.dp).fillMaxWidth()
+            )
             Text(text = trail.name, style = MaterialTheme.typography.headlineMedium)
-            Text(text = trail.description, style = MaterialTheme.typography.headlineSmall)
         }
     }
 }
