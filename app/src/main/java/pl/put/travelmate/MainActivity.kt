@@ -10,12 +10,10 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
-import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Card
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -34,7 +32,6 @@ import androidx.navigation.compose.rememberNavController
 import pl.put.travelmate.data.Difficulty
 import pl.put.travelmate.data.Trail
 import pl.put.travelmate.data.TrailStep
-import pl.put.travelmate.ui.components.TravelMateAppBar
 import pl.put.travelmate.ui.pages.TrailDetail
 import pl.put.travelmate.ui.theme.TravelMateTheme
 import androidx.compose.foundation.Image
