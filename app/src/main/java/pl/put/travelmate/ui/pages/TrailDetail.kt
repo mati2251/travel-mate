@@ -29,7 +29,6 @@ import pl.put.travelmate.data.Trail
 import pl.put.travelmate.ui.components.Stopwatch
 import androidx.compose.ui.Alignment
 
-@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun TrailDetail(trail: Trail) {
     val context = LocalContext.current
