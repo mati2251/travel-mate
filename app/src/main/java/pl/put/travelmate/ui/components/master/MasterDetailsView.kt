@@ -38,11 +38,12 @@ fun MasterDetailScreen(trails: List<Trail>) {
     val drawerState = rememberDrawerState(DrawerValue.Closed)
     val selectedTrail = remember { mutableStateOf<Trail?>(null) }
     val trailHistory = remember { mutableStateListOf<Trail>() }
+    val currentScreen = if (selectedTrail.value != null) "details" else "main"
+
     Drawer(navController = navController, state = drawerState) {
         Scaffold(topBar = {
-            TravelMateAppBar(navController = navController, drawerState = drawerState)
-        }
-        ) {
+            TravelMateAppBar(navController = navController, drawerState = drawerState, currentScreen = currentScreen)
+        }) {
             BackHandler(enabled = trailHistory.size > 1) {
                 trailHistory.removeLast()
                 selectedTrail.value = trailHistory.lastOrNull()
@@ -62,7 +63,6 @@ fun MasterDetailScreen(trails: List<Trail>) {
         }
     }
 }
-
 @Composable
 fun NavHostMaster(
     trails: List<Trail>,

@@ -6,11 +6,13 @@ import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import pl.put.travelmate.data.Difficulty
 import pl.put.travelmate.data.Trail
@@ -25,9 +27,13 @@ fun PhoneView(trails: List<Trail>) {
     val scope = rememberCoroutineScope()
     val navController = rememberNavController()
     val drawerState = rememberDrawerState(DrawerValue.Closed)
+    val navBackStackEntry by navController.currentBackStackEntryAsState()
+    val currentRoute = navBackStackEntry?.destination?.route ?: "main"
+    val currentScreen = if (currentRoute.startsWith("trail/")) "details" else "main"
+
     Drawer(navController = navController, state = drawerState) {
         Scaffold(topBar = {
-            TravelMateAppBar(navController = navController, drawerState = drawerState)
+            TravelMateAppBar(navController = navController, drawerState = drawerState, currentScreen = currentScreen)
         }) {
             Column(Modifier.padding(it)) {
                 PhoneNavHost(trails = trails, navController = navController)

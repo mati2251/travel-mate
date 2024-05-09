@@ -1,8 +1,11 @@
 package pl.put.travelmate.ui.components
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -23,15 +26,20 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import kotlinx.coroutines.launch
+import pl.put.travelmate.R
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun TravelMateAppBar(navController: NavController, drawerState: DrawerState) {
+fun TravelMateAppBar(navController: NavController, drawerState: DrawerState, currentScreen: String) {
     val scope = rememberCoroutineScope()
+    val showImage = currentScreen != "main"
+
     TopAppBar(
         navigationIcon = {
             IconButton(onClick = {
@@ -42,7 +50,18 @@ fun TravelMateAppBar(navController: NavController, drawerState: DrawerState) {
                 Icon(Icons.Filled.Menu, contentDescription = "Menu")
             }
         },
-        title = { Text("TravelMate") },
+        title = {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text("TravelMate")
+                if (showImage) {
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Image(
+                        painter = painterResource(id = R.drawable.image),
+                        contentDescription = "Custom Image"
+                    )
+                }
+            }
+        },
         actions = {
             IconButton(onClick = { navController.navigate("main") }) {
                 Icon(Icons.Filled.Home, contentDescription = "Main")
